@@ -147,7 +147,54 @@ class STL(object):
 		
 	    fd.close()
 
+    def __vtt(self, som = '01:00:00;00'):
+	vtt = ''
 
+	stc = fromString(som)
+	
+	vtt = vtt + 'WEBVTT\n\n'
+	i = 0
+	for tti in self.tti:
+	    if tti.tci > stc:
+		tcin  = tti.tci - stc
+    		tcout = tti.tco - stc
+    
+		srt = u'%s --> %s\n%s' % (tcin.msstr(), tcout.msstr(), tti.tf.encode_utf8())
+		srt = srt.replace('\n\n', '\n')
+		srt = srt + '\n\n' if not srt.endswith('\n') else srt + '\n'	
+		i = i + 1
+		vtt = vtt + srt	
+
+	return vtt    
+
+    def __srt(self, som = '01:00:00;00'):
+
+	srt = ''
+	stc = fromString(som)
+		
+	i = 0    
+	for tti in self.tti:
+	    if tti.tci > stc:
+		tcin  = tti.tci - stc
+    		tcout = tti.tco - stc
+    
+		srt = srt + u'%d\n%s --> %s\n%s' % (i, tcin.msstring(), tcout.msstring(), tti.tf.encode_utf8())
+		srt = srt.replace('\n\n', '\n')
+		srt = srt + '\n\n' if not srt.endswith('\n') else srt + '\n'	
+		i = i + 1
+	return srt
+
+
+    def toString(self, format =  'srt', som = '01:00:00;00'):
+	srt = ''
+	if format == 'srt':
+	    srt = self.__srt(som)
+	if format == 'vtt':
+	    srt = self.__vtt(som)
+
+	return srt.encode('utf-8')
+
+    
     def export(self, filename = '', format = 'srt', som = '01:00:00;00'):
 	if filename != '':
 	    try:
@@ -155,21 +202,17 @@ class STL(object):
 	    except:
 		pass
 	    if format == 'srt':
-		stc = fromString(som)
-		
-		i = 0    
-		for tti in self.tti:
-		    if tti.tci > stc:
-			tcin  = tti.tci - stc
-    			tcout = tti.tco - stc
-    
-			srt = u'%d\n%s --> %s\n%s' % (i, tcin.msstring(), tcout.msstring(), tti.tf.encode_utf8())
-			srt = srt.replace('\n\n', '\n')
-			srt = srt + '\n\n' if not srt.endswith('\n') else srt + '\n'	
-			i = i + 1
-			fd.write(srt.encode('utf-8'))	
+		srt = self.__srt(som)
+		fd.write(srt.encode('utf-8'))	
 		fd.close()
 	
+	    if format == 'vtt':
+		srt = self.__vtt(som)
+		stc = fromString(som)
+		fd.write(srt.encode('utf-8'))	
+		fd.close()
+
+
 
 class TextField(object):
     def __init__(self, TFBuff=None):

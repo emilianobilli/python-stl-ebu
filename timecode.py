@@ -138,6 +138,31 @@ class TimeCode(object):
     def __repr__(self):
 	return str(self)
 
+    def msstr(self, lastcolon = '.', mslen = 3):
+	if self.frameRate ==  29.97:
+    	    hh, ff = divmod(self.frames, 107892)
+    	    mm = int((self.frames + (2 * int(ff / 1800)) - (2 * (int(ff / 18000))) - (107892 * hh)) / 1800)
+    	    ss = int((self.frames - (1798 * mm) - (2 * int(mm / 10)) - (107892 * hh)) / 30)
+    	    ff = int(self.frames - (30 * ss) - (1798 * mm) - (2 * int(mm / 10)) - (107892 * hh))
+
+	elif self.frameRate == 30:
+    	    ss, ff = divmod( int(self.frames), int(self.frameRate) )
+    	    mm, ss = divmod( ss, 60 )
+    	    hh, mm = divmod( mm, 60 )
+	else:
+    	    pass
+    
+	hhstr = str(hh) if hh > 9 else '0' + str(hh)
+	mmstr = str(mm) if mm > 9 else '0' + str(mm)
+	ssstr = str(ss) if ss > 9 else '0' + str(ss)
+	ffstr = str(int (( ff * 1000) / 30))
+
+	while len(ffstr) < mslen:
+	    ffstr = ffstr + '0'
+
+	return ('%s:%s:%s%s%s' % (hhstr,mmstr,ssstr,lastcolon,ffstr))
+
+
     def msstring(self):
 	if self.frameRate ==  29.97:
     	    hh, ff = divmod(self.frames, 107892)
